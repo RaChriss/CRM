@@ -42,7 +42,14 @@ class AdminController {
         Flight::render('template', [
             'pageName' => 'admin',
             'pageTitle' => 'Admin Page',
-            'data' => $data
+            'categories' => $categories,
+            'transactions' => $transactions,
+            'exercises' => $exercises,
+            'types' => $types,
+            'departments' => $departments,
+            'selectedExercise' => $selectedExercise,
+            'budgetData' => $budgetData,
+            'message' => Flight::get('message')
         ]);
     }
 
