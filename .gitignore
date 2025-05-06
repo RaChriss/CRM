@@ -1,9 +1,0 @@
-#config files
-config.php
-.htaccess
-vendor/
-composer.json
-composer.lock
-docker-compose.yml
-runway
-Vagrantfile
