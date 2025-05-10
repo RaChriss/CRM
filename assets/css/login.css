@@ -1,0 +1,204 @@
+*{
+    margin:0;
+    padding: 0;
+}
+
+:root {
+    --primary-color: #1e5180;
+    --secondary-color: #2c7873;
+    --accent-color: #3aafa9;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --success-color: #28a745;
+}
+
+body {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+button {
+    margin-left: 30%;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 450px;
+    padding: 0;
+    margin-left: 30%;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background-color: white;
+}
+
+.card-header {
+    background: var(--primary-color);
+    color: white;
+    border-bottom: none;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.card-header::after {
+    content: "";
+    position: absolute;
+    bottom: -15px;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: white;
+    border-radius: 50% 50% 0 0;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    color: var(--dark-color);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    height: auto;
+}
+
+.form-control:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(58, 175, 169, 0.25);
+}
+
+.input-group-text {
+    background: none;
+    border: 2px solid #e9ecef;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    padding: 0 15px;
+}
+
+.password-toggle {
+    cursor: pointer;
+    color: var(--secondary-color);
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.password-toggle:hover {
+    color: var(--primary-color);
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary:hover {
+    background: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(44, 120, 115, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.alert {
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: none;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+.budget-icon {
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.card-header-content {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.system-name {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-top: 0.25rem;
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+    z-index: 10;
+}
+
+.icon-input {
+    padding-left: 40px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeIn 0.8s ease-out;
+}

@@ -36,7 +36,9 @@ $router->post('/admin/deleteExercise', [$adminController, 'deleteExercise']);
 $router->get('/admin/exportListsPdf', [$adminController, 'exportListsPdf']);
 
 $clientController = new app\controllers\ClientController();
-$router->get('/client', [$clientController, 'showClientPage']);
+$statsController = new app\controllers\StatsController();
+
+$router->get('/client', [$statsController, 'showDashboard']);
 $router->post('/client/importCsv', [$clientController, 'importClientsCsv']);
 $router->get('/client/exportPdf', [$clientController, 'exportClientsPdf']);
 

@@ -11,13 +11,9 @@ $base_url = Flight::get('flight.base_url');
   <meta
     content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
     name="viewport" />
-  <!-- <link
-      rel="icon"
-      href="<?= $base_url ?>/assets/img/kaiadmin/favicon.ico"
-      type="image/x-icon"
-    /> -->
+  <script src="<?= $base_url ?>/assets/js/core/jquery-3.7.1.min.js"></script>
+  <script src="<?= $base_url ?>/assets/js/plugin/chart.js/chart.min.js"></script>
 
-  <!-- Fonts and icons -->
   <script src="<?= $base_url ?>/assets/js/plugin/webfont/webfont.min.js"></script>
   <script>
     WebFont.load({
