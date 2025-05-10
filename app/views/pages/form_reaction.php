@@ -1,16 +1,15 @@
 <div class="container">
     <div class="page-inner">
         <?php if (!empty($message)): ?>
-            <div class="alert alert-info"><?= htmlspecialchars($message) ?></div>
+            <div class="alert alert-<?= strpos($message, 'Erreur') !== false ? 'danger' : 'success' ?>">
+                <?= htmlspecialchars($message) ?>
+            </div>
         <?php endif; ?>
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Insertion D'Actions
-                            <?php if (isset($message)): ?>
-                                <span class="text-muted"><?= htmlspecialchars($message) ?></span>
-                            <?php endif; ?>
+                        <div class="card-title">Insertion De Reactions
                         </div>
                     </div>
                     <div class="card-body">
@@ -28,7 +27,7 @@
                                             required>
                                             <option value="">Sélectionner une Action</option>
                                             <?php foreach ($actions as $action): ?>
-                                                <option value="<?= $action['id'] ?>">ID:<?= $action['id'] ?>,<?= $action['description'] ?></option>
+                                                <option value="<?= $action['id_action'] ?>">ID:<?= $action['id_action'] ?>,<?= $action['description'] ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -41,7 +40,7 @@
                                             required>
                                             <option value="">Sélectionner un Type</option>
                                             <?php foreach ($types as $type): ?>
-                                                <option value="<?= $type['id'] ?>"><?= $type['description'] ?></option>
+                                                <option value="<?= $type['id_type_reaction'] ?>"><?= $type['description'] ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                         </select>

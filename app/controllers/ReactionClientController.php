@@ -15,9 +15,9 @@ class ReactionClientController
                 throw new \Exception('ID de la réaction effectuée manquant.');
             }
             $generaliserModel->updateTableData('reactions', ['statut' => 'rejete'], ['id_reaction' => $reactionId]);
+            $_SESSION['flash_message'] = 'Réaction rejetée avec succès.';
         } catch (\Exception $e) {
-            Flight::set('message', 'Erreur : ' . $e->getMessage());
-            return;
+            $_SESSION['flash_message'] = 'Erreur : ' . $e->getMessage();
         } finally {
             Flight::redirect('/crm/reaction/validation');
         }
@@ -26,17 +26,20 @@ class ReactionClientController
     public function listeToValidate()
     {
         $generaliserModel = Flight::generaliserModel();
-
         $conditions = ['statut' => 'en attente'];
         $join = [
             ['type_reactions', [['reactions.type_reaction_id', 'type_reactions.id_type_reaction']]],
         ];
         $reactions = $generaliserModel->getTableData('reactions', $conditions, [], $join);
-
+        
+        $message = $_SESSION['flash_message'] ?? null;
+        unset($_SESSION['flash_message']); // Supprime le message après l'avoir récupéré
+        
         Flight::render('template', [
             'pageName' => 'liste_reaction_pending',
             'pageTitle' => 'Liste des Réactions à Valider',
-            'reactions' => $reactions
+            'reactions' => $reactions,
+            'message' => $message,
         ]);
     }
 
@@ -57,14 +60,14 @@ class ReactionClientController
             $reactionModel = Flight::reactionModel();
             $reactionModel->checkDateReaction($actionId, $createdAt);
             $result = $generaliserModel->insererDonnee('reactions', $data);
+
             if ($result['status'] === 'success') {
-                Flight::set('message', 'Réaction insérée avec succès.');
+                $_SESSION['flash_message'] = 'Réaction insérée avec succès.';
             } else {
-                Flight::set('message', 'Erreur lors de l\'insertion de la réaction : ' . $result['message']);
+                $_SESSION['flash_message'] = 'Erreur lors de l\'insertion de la réaction : ' . $result['message'];
             }
         } catch (\Exception $e) {
-            Flight::set('message', 'Erreur : ' . $e->getMessage());
-            return;
+            $_SESSION['flash_message'] = 'Erreur : ' . $e->getMessage();
         } finally {
             Flight::redirect('/crm/reaction/insert');
         }
@@ -75,12 +78,16 @@ class ReactionClientController
         $modelGeneraliser = Flight::generaliserModel();
         $actions = $modelGeneraliser->getTableData('actions', []);
         $types = $modelGeneraliser->getTableData('type_reactions', []);
+
+        $message = $_SESSION['flash_message'] ?? null;
+        unset($_SESSION['flash_message']); // Supprime le message après l'avoir récupéré
+
         Flight::render('template', [
             'pageName' => 'form_reaction',
             'pageTitle' => 'Ajouter une Reaction',
             'actions' => $actions,
             'types' => $types,
-            'message' => Flight::get('message') ?? null,
+            'message' => $message,
         ]);
     }
 

@@ -17,25 +17,30 @@ class ActionClientController
             'type_action_id' => $_POST['type_action_id'] ?? null
         ];
         $result = $generaliserModel->insererDonnee('actions', $data);
+        
         if ($result['status'] === 'success') {
-            Flight::set('message', 'Action insérée avec succès.');
+            $_SESSION['flash_message'] = 'Action insérée avec succès.';
         } else {
-            Flight::set('message', 'Erreur lors de l\'insertion de l\'action : ' . $result['message']);
+            $_SESSION['flash_message'] = 'Erreur lors de l\'insertion de l\'action : ' . $result['message'];
         }
         Flight::redirect('/crm/action/insert');
     }
-
+    
     public function insertPage()
     {
         $modelGeneraliser = Flight::generaliserModel();
         $clients = $modelGeneraliser->getTableData('clients', []);
         $types = $modelGeneraliser->getTableData('type_actions', []);
+        
+        $message = $_SESSION['flash_message'] ?? null;
+        unset($_SESSION['flash_message']); // Nettoyer le message après l'avoir récupéré
+        
         Flight::render('template', [
             'pageName' => 'form_action_client',
             'pageTitle' => 'Ajouter une action client',
             'clients' => $clients,
             'types' => $types,
-            'message' => Flight::get('message') ?? null,
+            'message' => $message,
         ]);
     }
 

@@ -1,5 +1,10 @@
 <div class="container">
     <div class="page-inner">
+    <?php if (!empty($message)): ?>
+            <div class="alert alert-<?= strpos($message, 'Erreur') !== false ? 'danger' : 'success' ?>">
+                <?= htmlspecialchars($message) ?>
+            </div>
+        <?php endif; ?>
         <!-- Titre -->
         <div class="d-flex align-items-start align-items-md-center flex-column flex-md-row pt-2 pb-4">
             <div>
