@@ -44,12 +44,20 @@ $router->get('/client/exportPdf', [$clientController, 'exportClientsPdf']);
 
 $actionClientController = new app\controllers\ActionClientController();
 $router->get('/action-client', [$actionClientController, 'showActionStats']);
+$router->get('/crm/action/insert', [$actionClientController, 'insertPage']);
+$router->post('/crm/action/insert', [$actionClientController, 'saveAction']);
 $router->post('/action-client/importCsv', [$actionClientController, 'importActionsEffectueesCsv']);
 $router->get('/action-client/exportPdf', [$actionClientController, 'exportActionsEffectueesPdf']);
 $router->post('/action-client/importActionsCsv', [$actionClientController, 'importActionsCsv']);
 $router->get('/action-client/exportActionsPdf', [$actionClientController, 'exportActionsPdf']);
 
 $reactionClientController = new app\controllers\ReactionClientController();
+$router->get('/crm/reaction/insert', [$reactionClientController, 'insertPage']);
+$router->post('/crm/reaction/insert', [$reactionClientController, 'saveReaction']);
+$router->get('/crm/reaction/validation', [$reactionClientController, 'listeToValidate']);
+$router->post('/crm/reaction/validate', [$reactionClientController, 'validateReaction']);
+$router->post('/crm/reaction/refuse', [$reactionClientController, 'refuseReaction']);
+
 $router->get('/reaction-client', [$reactionClientController, 'showReactionStats']);
 $router->post('/reaction-client/importCsv', [$reactionClientController, 'importReactionsEffectueesCsv']);
 $router->get('/reaction-client/exportPdf', [$reactionClientController, 'exportReactionsEffectueesPdf']);
@@ -60,6 +68,7 @@ $router->get('/reaction-client/liste-reaction-pending', [$reactionClientControll
 $router->post('/reaction-client/accepter-reaction', [$reactionClientController, 'validerReaction']);
 $router->post('/reaction-client/refuser-reaction', [$reactionClientController, 'refuserReaction']);
 $router->get('/reaction-client/effectuer-reaction', [$reactionClientController, 'showEffectuerReactionForm']);
+
 $reactionImpactController = new app\controllers\ReactionImpactController();
 $router->get('/reaction-impact', [$reactionImpactController, 'showImpact']);
 

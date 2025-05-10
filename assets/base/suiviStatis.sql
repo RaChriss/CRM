@@ -2,26 +2,26 @@
 -- ==============================
 
 -- Nombre d'actions en attente par type d'action
-CREATE VIEW stats_actions_en_attente AS
+CREATE OR REPLACE VIEW stats_actions_en_attente AS
 SELECT 
     ta.description AS type_action,
-    COUNT(a.id) AS nombre_actions,
+    COUNT(a.id_action) AS nombre_actions,
     AVG(DATEDIFF(CURRENT_DATE(), a.created_at)) AS jours_attente_moyens
 FROM actions a
-JOIN type_actions ta ON a.type_action_id = ta.id
-LEFT JOIN reactions r ON a.id = r.action_id
-WHERE r.id IS NULL
+JOIN type_actions ta ON a.type_action_id = ta.id_type_action
+LEFT JOIN reactions r ON a.id_action = r.action_id
+WHERE r.id_reaction IS NULL
 GROUP BY ta.description
 ORDER BY nombre_actions DESC;
 
 -- Clients actifs (avec interactions récentes)
-CREATE VIEW stats_clients_actifs AS
+CREATE Or Replace VIEW stats_clients_actifs AS
 SELECT 
     c.type AS type_client,
-    COUNT(DISTINCT c.id) AS nombre_clients,
-    (COUNT(DISTINCT c.id) * 100 / (SELECT COUNT(*) FROM clients WHERE actif = TRUE)) AS pourcentage_total
+    COUNT(DISTINCT c.id_client) AS nombre_clients,
+    (COUNT(DISTINCT c.id_client) * 100 / (SELECT COUNT(*) FROM clients WHERE actif = TRUE)) AS pourcentage_total
 FROM clients c
-JOIN actions a ON c.id = a.client_id
+JOIN actions a ON c.id_client = a.client_id
 WHERE a.created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 3 MONTH)
 AND c.actif = TRUE
 GROUP BY c.type;
@@ -33,10 +33,10 @@ SELECT
     (SELECT COUNT(*) FROM animaux WHERE statut = 'disponible') AS animaux_disponibles,
     (SELECT COUNT(*) FROM animaux WHERE statut = 'réservé') AS animaux_reserves,
     (SELECT COUNT(*) FROM animaux a 
-     JOIN transactions_animaux ta ON a.id = ta.animal_id 
+     JOIN transactions_animaux ta ON a.id_animaux = ta.animal_id 
      WHERE a.statut = 'vendu' AND YEAR(ta.date_transaction) = YEAR(CURRENT_DATE())) AS animaux_vendus_annee,
     (SELECT AVG(ta.prix) FROM animaux a
-     JOIN transactions_animaux ta ON a.id = ta.animal_id
+     JOIN transactions_animaux ta ON a.id_animaux = ta.animal_id
      WHERE a.statut = 'vendu' AND YEAR(ta.date_transaction) = YEAR(CURRENT_DATE())) AS prix_moyen_vente,
     
     -- Statistiques stocks
@@ -52,15 +52,15 @@ SELECT
 -- ================================
 
 -- Actions en cours de traitement par responsable
-CREATE VIEW stats_actions_en_cours AS
+Create or replace view stats_actions_en_cours AS
 SELECT 
     u.name AS responsable,
     d.name AS departement,
-    COUNT(r.id) AS nombre_actions,
+    COUNT(r.id_reaction) AS nombre_actions,
     AVG(DATEDIFF(CURRENT_DATE(), a.created_at)) AS delai_moyen_jours,
     MAX(DATEDIFF(CURRENT_DATE(), a.created_at)) AS delai_max_jours
 FROM reactions r
-JOIN actions a ON r.action_id = a.id
+JOIN actions a ON r.action_id = a.id_action
 JOIN user u ON r.valide_par = u.user_id
 JOIN department d ON u.department_id = d.department_id
 WHERE r.statut = 'en attente'
@@ -68,26 +68,26 @@ GROUP BY u.name, d.name
 ORDER BY nombre_actions DESC;
 
 -- Temps de réaction moyen par type d'action
-CREATE VIEW stats_temps_reaction AS
+Create or replace view stats_temps_reaction AS
 SELECT 
     ta.description AS type_action,
-    COUNT(r.id) AS nombre_reactions,
+    COUNT(r.id_reaction) AS nombre_reactions,
     AVG(DATEDIFF(r.created_at, a.created_at)) AS temps_moyen_jours,
     MIN(DATEDIFF(r.created_at, a.created_at)) AS temps_min_jours,
     MAX(DATEDIFF(r.created_at, a.created_at)) AS temps_max_jours
 FROM reactions r
-JOIN actions a ON r.action_id = a.id
-JOIN type_actions ta ON a.type_action_id = ta.id
+JOIN actions a ON r.action_id = a.id_action
+JOIN type_actions ta ON a.type_action_id = ta.id_type_action
 WHERE r.statut = 'valide'
 GROUP BY ta.description
 ORDER BY nombre_reactions DESC;
 
 -- Charge de travail par département
-CREATE VIEW stats_charge_travail AS
+Create or replace view stats_charge_travail AS
 SELECT 
     d.name AS departement,
-    COUNT(r.id) AS actions_en_cours,
-    (COUNT(r.id) * 100 / (SELECT COUNT(*) FROM reactions WHERE statut = 'en attente')) AS pourcentage_total
+    COUNT(r.id_reaction) AS actions_en_cours,
+    (COUNT(r.id_reaction) * 100 / (SELECT COUNT(*) FROM reactions WHERE statut = 'en attente')) AS pourcentage_total
 FROM reactions r
 JOIN user u ON r.valide_par = u.user_id
 JOIN department d ON u.department_id = d.department_id
@@ -99,36 +99,36 @@ ORDER BY actions_en_cours DESC;
 -- ==============================
 
 -- Taux de satisfaction client global et par type d'action
-CREATE VIEW stats_satisfaction AS
+Create or replace view stats_satisfaction AS
 SELECT 
     ta.description AS type_action,
-    COUNT(f.id) AS nombre_feedbacks,
+    COUNT(f.id_feedback) AS nombre_feedbacks,
     AVG(f.note) AS note_moyenne,
-    (COUNT(CASE WHEN f.note >= 4 THEN 1 END) * 100 / COUNT(f.id)) AS pourcentage_satisfaits
+    (COUNT(CASE WHEN f.note >= 4 THEN 1 END) * 100 / COUNT(f.id_feedback)) AS pourcentage_satisfaits
 FROM feedbacks f
-JOIN reactions r ON f.reaction_id = r.id
-JOIN actions a ON r.action_id = a.id
-JOIN type_actions ta ON a.type_action_id = ta.id
+JOIN reactions r ON f.reaction_id = r.id_reaction
+JOIN actions a ON r.action_id = a.id_action
+JOIN type_actions ta ON a.type_action_id = ta.id_type_action
 GROUP BY ta.description
 UNION
 SELECT 
     'GLOBAL' AS type_action,
-    COUNT(f.id) AS nombre_feedbacks,
+    COUNT(f.id_feedback) AS nombre_feedbacks,
     AVG(f.note) AS note_moyenne,
-    (COUNT(CASE WHEN f.note >= 4 THEN 1 END) * 100 / COUNT(f.id)) AS pourcentage_satisfaits
+    (COUNT(CASE WHEN f.note >= 4 THEN 1 END) * 100 / COUNT(f.id_feedback)) AS pourcentage_satisfaits
 FROM feedbacks f;
 
 -- Taux de résolution des problèmes
-CREATE VIEW stats_resolution_problemes AS
+Create or replace view stats_resolution_problemes AS
 SELECT 
     ta.description AS type_probleme,
-    COUNT(a.id) AS nombre_problemes,
-    COUNT(r.id) AS nombre_resolus,
-    (COUNT(r.id) * 100 / COUNT(a.id)) AS taux_resolution,
+    COUNT(a.id_action) AS nombre_problemes,
+    COUNT(r.id_reaction) AS nombre_resolus,
+    (COUNT(r.id_reaction) * 100 / COUNT(a.id_action)) AS taux_resolution,
     AVG(DATEDIFF(r.created_at, a.created_at)) AS delai_moyen_resolution
 FROM actions a
-JOIN type_actions ta ON a.type_action_id = ta.id
-LEFT JOIN reactions r ON a.id = r.action_id AND r.statut = 'valide'
+JOIN type_actions ta ON a.type_action_id = ta.id_type_action
+LEFT JOIN reactions r ON a.id_action = r.action_id AND r.statut = 'valide'
 WHERE ta.description LIKE '%plainte%' 
    OR ta.description LIKE '%probleme%'
    OR ta.description LIKE '%réclamation%'
@@ -138,13 +138,13 @@ GROUP BY ta.description;
 -- ========================================
 
 -- Performance des animaux (taux de vente, prix moyen)
-CREATE VIEW stats_performance_animaux AS
+Create or replace view stats_performance_animaux AS
 SELECT 
     espece,
     race,
-    COUNT(id) AS nombre_animaux,
+    COUNT(id_animaux) AS nombre_animaux,
     SUM(CASE WHEN statut = 'vendu' THEN 1 ELSE 0 END) AS nombre_vendus,
-    (SUM(CASE WHEN statut = 'vendu' THEN 1 ELSE 0 END) * 100 / COUNT(id)) AS taux_vente,
+    (SUM(CASE WHEN statut = 'vendu' THEN 1 ELSE 0 END) * 100 / COUNT(id_animaux)) AS taux_vente,
     AVG(CASE WHEN statut = 'vendu' THEN prix ELSE NULL END) AS prix_moyen_vente,
     MAX(CASE WHEN statut = 'vendu' THEN prix ELSE NULL END) AS prix_max,
     MIN(CASE WHEN statut = 'vendu' THEN prix ELSE NULL END) AS prix_min
@@ -153,10 +153,10 @@ GROUP BY espece, race
 ORDER BY espece, taux_vente DESC;
 
 -- Suivi des interventions sanitaires
-CREATE VIEW stats_interventions_sanitaires AS
+Create or replace view stats_interventions_sanitaires AS
 SELECT 
     i.type,
-    COUNT(i.id) AS nombre_interventions,
+    COUNT(i.id_intervention) AS nombre_interventions,
     AVG(i.cout) AS cout_moyen,
     (SELECT COUNT(DISTINCT animal_id) FROM interventions WHERE type = i.type) AS animaux_concernes,
     (SELECT COUNT(DISTINCT client_id) FROM interventions WHERE type = i.type) AS elevages_concernes
@@ -165,21 +165,21 @@ GROUP BY i.type
 ORDER BY nombre_interventions DESC;
 
 -- Rentabilité par client (éleveur/acheteur)
-CREATE VIEW stats_rentabilite_clients AS
+Create or replace view stats_rentabilite_clients AS
 SELECT 
-    c.id,
+    c.id_client,
     c.nom,
     c.type AS type_client,
-    COUNT(DISTINCT a.id) AS nombre_interactions,
-    COUNT(DISTINCT ta.id) AS nombre_transactions,
+    COUNT(DISTINCT a.id_action) AS nombre_interactions,
+    COUNT(DISTINCT ta.id_trans_animaux) AS nombre_transactions,
     SUM(CASE WHEN r.montant IS NOT NULL THEN r.montant ELSE 0 END) AS chiffre_affaires,
-    (SELECT COUNT(DISTINCT animal_id) FROM transactions_animaux WHERE client_id = c.id) AS nombre_animaux_echanges,
-    (SELECT AVG(note) FROM feedbacks WHERE client_id = c.id) AS satisfaction_moyenne
+    (SELECT COUNT(DISTINCT animal_id) FROM transactions_animaux WHERE client_id = c.id_client) AS nombre_animaux_echanges,
+    (SELECT AVG(note) FROM feedbacks WHERE client_id = c.id_client) AS satisfaction_moyenne
 FROM clients c
-LEFT JOIN actions a ON c.id = a.client_id
-LEFT JOIN reactions r ON a.id = r.action_id AND r.statut = 'valide'
-LEFT JOIN transactions_animaux ta ON c.id = ta.client_id
-GROUP BY c.id, c.nom, c.type
+LEFT JOIN actions a ON c.id_client = a.client_id
+LEFT JOIN reactions r ON a.id_action = r.action_id AND r.statut = 'valide'
+LEFT JOIN transactions_animaux ta ON c.id_client = ta.client_id
+GROUP BY c.id_client, c.nom, c.type
 ORDER BY chiffre_affaires DESC;
 
 -- 5. FONCTIONS UTILITAIRES POUR LE SUIVI

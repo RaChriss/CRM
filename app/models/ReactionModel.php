@@ -1,15 +1,38 @@
 <?php
+
 namespace app\models;
+
 use PDO;
 use DateTime;
-class ReactionModel {
+use Flight;
+
+class ReactionModel
+{
     private $db;
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->db = $db;
     }
 
+    public function checkDateReaction($actionId, $dateReaction)
+    {
+        $modelGeneraliser = Flight::generaliserModel();
+        $action = $modelGeneraliser->getTableData('actions', ['id_action' => $actionId]);
+        if (!empty($action)) {
+            $createdAt = new DateTime($action[0]['created_at']);
+            $reactionDate = new DateTime($dateReaction);
+
+            if ($reactionDate < $createdAt) {
+                throw new \Exception("La date de réaction doit être postérieure à la date de création de l'action.");
+            }
+        } else {
+            throw new \Exception("Action introuvable avec l'ID fourni.");
+        }
+    }
+
     // Fréquence de chaque réaction et nombre de clients distincts, filtré par phase
-    public function getReactionFrequencies($phase = null) {
+    public function getReactionFrequencies($phase = null)
+    {
         $sql = "SELECT r.id, r.description, r.phase, r.cout, COUNT(re.id) AS frequence, COUNT(DISTINCT ae.user_id) AS nb_clients
                 FROM reaction r
                 LEFT JOIN reaction_effectue re ON r.id = re.reaction_id
@@ -26,7 +49,8 @@ class ReactionModel {
     }
 
     // Réactions les plus fréquentes par tranche d'âge, filtré par phase
-    public function getReactionFrequenciesByAgeRange($phase = null, $ranges = [[18,25],[26,35],[36,45],[46,60],[61,120]]) {
+    public function getReactionFrequenciesByAgeRange($phase = null, $ranges = [[18, 25], [26, 35], [36, 45], [46, 60], [61, 120]])
+    {
         $results = [];
         foreach ($ranges as $range) {
             $sql = "SELECT r.id, r.description, r.phase, COUNT(re.id) AS frequence
@@ -49,9 +73,9 @@ class ReactionModel {
     }
 
 
-public function getExerciseIdByDate($date)
-{
-    $sql = "
+    public function getExerciseIdByDate($date)
+    {
+        $sql = "
         SELECT e.exercise_id, e.start_date, 
                COALESCE(
                    (SELECT MIN(e2.start_date) 
@@ -68,17 +92,17 @@ public function getExerciseIdByDate($date)
                   DATE_ADD(e.start_date, INTERVAL 1 YEAR)
               )
     ";
-    $stmt = $this->db->prepare($sql);
-    $stmt->execute(['date' => $date]);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['date' => $date]);
 
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    return $result ? $result['exercise_id'] : null;
-}
+        return $result ? $result['exercise_id'] : null;
+    }
 
-public function getPeriodNumberByDate($date)
-{
-    $sql = "
+    public function getPeriodNumberByDate($date)
+    {
+        $sql = "
         SELECT e.exercise_id, e.start_date, e.nb_period, 
                COALESCE(
                    (SELECT MIN(e2.start_date) 
@@ -95,62 +119,62 @@ public function getPeriodNumberByDate($date)
                   DATE_ADD(e.start_date, INTERVAL 1 YEAR)
               )
     ";
-    $stmt = $this->db->prepare($sql);
-    $stmt->execute(['date' => $date]);
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['date' => $date]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($result) {
-        $startDate = new DateTime($result['start_date']);
-        $endDate = new DateTime($result['end_date']);
-        $givenDate = new DateTime($date);
+        if ($result) {
+            $startDate = new DateTime($result['start_date']);
+            $endDate = new DateTime($result['end_date']);
+            $givenDate = new DateTime($date);
 
-        $exerciseDuration = $startDate->diff($endDate)->days; // Durée totale de l'exercice en jours
-        $periodDuration = $exerciseDuration / $result['nb_period']; // Durée d'une période en jours
+            $exerciseDuration = $startDate->diff($endDate)->days; // Durée totale de l'exercice en jours
+            $periodDuration = $exerciseDuration / $result['nb_period']; // Durée d'une période en jours
 
-        $daysSinceStart = $startDate->diff($givenDate)->days; // Jours écoulés depuis le début de l'exercice
-        $periodNumber = (int)floor($daysSinceStart / $periodDuration) + 1; // Calcul du numéro de période
+            $daysSinceStart = $startDate->diff($givenDate)->days; // Jours écoulés depuis le début de l'exercice
+            $periodNumber = (int)floor($daysSinceStart / $periodDuration) + 1; // Calcul du numéro de période
 
-        return $periodNumber;
+            return $periodNumber;
+        }
+
+        return null;
     }
 
-    return null;
-}
 
+    public function reactionEffectueAvecBudget($reactionId, $actionEffectueId, $dateReaction)
+    {
+        try {
+            // Démarrer une transaction
+            $this->db->beginTransaction();
 
-public function reactionEffectueAvecBudget($reactionId, $actionEffectueId, $dateReaction)
-{
-    try {
-        // Démarrer une transaction
-        $this->db->beginTransaction();
-
-        // Insérer dans la table reaction_effectue
-        $sql = "INSERT INTO reaction_effectue (reaction_id, action_effectue_id, date_reaction) 
+            // Insérer dans la table reaction_effectue
+            $sql = "INSERT INTO reaction_effectue (reaction_id, action_effectue_id, date_reaction) 
                 VALUES (:reaction_id, :action_effectue_id, :date_reaction)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'reaction_id' => $reactionId,
-            'action_effectue_id' => $actionEffectueId,
-            'date_reaction' => $dateReaction
-        ]);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'reaction_id' => $reactionId,
+                'action_effectue_id' => $actionEffectueId,
+                'date_reaction' => $dateReaction
+            ]);
 
-        // Récupérer l'ID de la réaction effectuée insérée
-        $reactionEffectueId = $this->db->lastInsertId();
+            // Récupérer l'ID de la réaction effectuée insérée
+            $reactionEffectueId = $this->db->lastInsertId();
 
-        // Insérer dans la table reaction_effectue_validation avec status = 0
-        $sql = "INSERT INTO reaction_effectue_validation (reaction_effectue_id, status) 
+            // Insérer dans la table reaction_effectue_validation avec status = 0
+            $sql = "INSERT INTO reaction_effectue_validation (reaction_effectue_id, status) 
                 VALUES (:reaction_effectue_id, :status)";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'reaction_effectue_id' => $reactionEffectueId,
-            'status' => 0 // En attente
-        ]);
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'reaction_effectue_id' => $reactionEffectueId,
+                'status' => 0 // En attente
+            ]);
 
-        // Valider la transaction
-        $this->db->commit();
-    } catch (\Exception $e) {
-        // Annuler la transaction en cas d'erreur
-        $this->db->rollBack();
-        throw $e;
+            // Valider la transaction
+            $this->db->commit();
+        } catch (\Exception $e) {
+            // Annuler la transaction en cas d'erreur
+            $this->db->rollBack();
+            throw $e;
+        }
     }
-}
 }

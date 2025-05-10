@@ -21,6 +21,7 @@ class UserController
         if ($result['success']) {
             $_SESSION['department_id'] = $result['data']['department_id'];
             $_SESSION['name'] = $result['data']['name'];
+            $_SESSION['user_id'] = $result['data']['user_id'];
             if ($result['data']['department_id'] == 1) {
                 Flight::redirect('admin');
             } else if ($result['data']['department_id'] == 5) {
