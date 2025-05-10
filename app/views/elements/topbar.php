@@ -26,7 +26,7 @@
           <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
             <span class="profile-username">
               <span class="op-7">Connecter en tant que</span>
-              <span class="fw-bold"><?= $_SESSION['username'] ?? 'Utilisateur' ?></span>
+              <span class="fw-bold"><?= $_SESSION['name'] ?? 'Utilisateur' ?></span>
             </span>
           </a>
           <ul class="dropdown-menu dropdown-user animated fadeIn">
@@ -34,8 +34,7 @@
               <li>
                 <div class="user-box">
                   <div class="u-text">
-                    <h4><?= $_SESSION['username'] ?? '  ' ?></h4>
-                    <p class="text-muted"><?= $_SESSION['email'] ?? 'email@example.com' ?></p>
+                    <h4><?= $_SESSION['name'] ?? '  ' ?></h4>
                     <a href="profile" class="btn btn-xs btn-secondary btn-sm">Voir profil</a>
                   </div>
                 </div>

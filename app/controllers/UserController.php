@@ -4,33 +4,37 @@ namespace app\controllers;
 
 use Flight;
 
-class UserController {
+class UserController
+{
 
-    public function __construct() {
-    }
+    public function __construct() {}
 
-    public function showLogin() {
+    public function showLogin()
+    {
         Flight::render('pages/login');
     }
 
-    public function authenticate() {
+    public function authenticate()
+    {
         $generaliserModel = Flight::generaliserModel();
-        $result = $generaliserModel->checkLogin('user', ['user_id','department_id'], 'POST', ['user_id', 'name', 'department_id']);
+        $result = $generaliserModel->checkLogin('user', ['user_id', 'department_id'], 'POST', ['user_id', 'name', 'department_id']);
         if ($result['success']) {
             $_SESSION['department_id'] = $result['data']['department_id'];
+            $_SESSION['name'] = $result['data']['name'];
             if ($result['data']['department_id'] == 1) {
-                Flight:: redirect('admin');
-            } else if($result['data']['department_id'] == 5){
-                Flight:: redirect('client');
+                Flight::redirect('admin');
+            } else if ($result['data']['department_id'] == 5) {
+                Flight::redirect('client');
             } else {
-                Flight:: redirect('home');
+                Flight::redirect('home');
             }
         } else {
             Flight::render('pages/login', ['error' => $result['message']]);
         }
     }
 
-    public function logout() {
+    public function logout()
+    {
         session_destroy();
         Flight::redirect('.');
     }
