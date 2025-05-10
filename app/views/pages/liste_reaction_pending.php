@@ -1,9 +1,10 @@
 <div class="container mt-4">
+<?php if (!empty($message)): ?>
+            <div class="alert alert-<?= strpos($message, 'Erreur') !== false ? 'danger' : 'success' ?>">
+                <?= htmlspecialchars($message) ?>
+            </div>
+        <?php endif; ?>
     <h1 class="mb-4">Liste des Réactions en Attente</h1>
-
-    <?php if (!empty($message)): ?>
-        <div class="alert alert-info"><?= htmlspecialchars($message) ?></div>
-    <?php endif; ?>
 
     <table class="table table-bordered table-striped">
         <thead>

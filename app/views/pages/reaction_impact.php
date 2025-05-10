@@ -1,8 +1,10 @@
 <div class="container mt-4">
     <h1 class="mb-4">Impact de la réaction</h1>
     <?php if (!empty($message)): ?>
-        <div class="alert alert-info"><?= htmlspecialchars($message) ?></div>
-    <?php endif; ?>
+            <div class="alert alert-<?= strpos($message, 'Erreur') !== false ? 'danger' : 'success' ?>">
+                <?= htmlspecialchars($message) ?>
+            </div>
+        <?php endif; ?>
     <?php if ($reaction): ?>
         <h2><?= htmlspecialchars($reaction['description']) ?></h2>
         <div class="card mb-4">

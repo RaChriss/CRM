@@ -19,6 +19,11 @@ function formatDateFr($dateString) {
 
 <div class="container">
     <div class="page-inner">
+    <?php if (!empty($message)): ?>
+            <div class="alert alert-<?= strpos($message, 'Erreur') !== false ? 'danger' : 'success' ?>">
+                <?= htmlspecialchars($message) ?>
+            </div>
+        <?php endif; ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="fw-bold mb-0">Tableau de Bord</h1>
             <div>

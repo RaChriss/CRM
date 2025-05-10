@@ -1,7 +1,9 @@
 <div class="container">
     <div class="page-inner">
-        <?php if (!empty($message)): ?>
-            <div class="alert alert-info"><?= htmlspecialchars($message) ?></div>
+    <?php if (!empty($message)): ?>
+            <div class="alert alert-<?= strpos($message, 'Erreur') !== false ? 'danger' : 'success' ?>">
+                <?= htmlspecialchars($message) ?>
+            </div>
         <?php endif; ?>
         <div class="row">
             <div class="col-md-12">
@@ -46,7 +48,7 @@
                                             required>
                                             <option value="">Sélectionner un client</option>
                                             <?php foreach ($clients as $client): ?>
-                                                <option value="<?= $client['id'] ?>"><?= $client['nom'] ?></option>
+                                                <option value="<?= $client['id_client'] ?>"><?= $client['nom'] ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -58,7 +60,7 @@
                                             name="type_action_id"
                                             required>
                                             <?php foreach ($types as $type): ?>
-                                                <option value="<?= $type['id'] ?>"><?= $type['description'] ?></option>
+                                                <option value="<?= $type['id_type_action'] ?>"><?= $type['description'] ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                         </select>
