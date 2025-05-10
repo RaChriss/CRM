@@ -8,6 +8,7 @@ use app\models\ReinitialisationModel;
 use app\models\UploadModel;
 use app\models\ActionModel;
 use app\models\ReactionModel;
+use app\models\StatsModel;
 use flight\Engine;
 use flight\database\PdoWrapper;
 use flight\debug\database\PdoQueryCapture;
@@ -50,4 +51,6 @@ Flight::map('reactionModel', function () {
 });
 
 
-
+Flight::map('statsModel', function () {
+    return new StatsModel(Flight::bdd());
+});

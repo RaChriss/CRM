@@ -1,0 +1,45 @@
+Fonctionnalite attendue:
+
+Insertion Actions des Clients : 
+    -type d'action .
+    -date de l'action .
+    -clients nanao anle action.
+    
+Insertion Reaction de l'entreprise par rapport aux Actions:
+    - mrelie anle Reaction @le action mifanaraka azy.
+    - date de la Reaction.
+    - depense lany.
+    - departement nanao anle Reaction.
+    - validation anle Reaction any am dept administration :
+        - mijery ny budget raha mbola ampy.
+        - de raha ampy de validena , (zany hoe anasorana anle depense ny budget).
+    - afaka refusena koa ny reaction iray.
+    - isakin dept de afaka manao proposition anah reaction , de avieo ny dept admin no miconfirme azy.
+
+Statistiques CRM:    
+
+
+    afaka atao hoe Statistiques par periode ilay izy : ohatra hoe en 3 mois oatrany aona ilay izy , na hoe 12 mois, na koa hoe par jour. (atao afaka ovaivaina zany le periode)
+
+
+    -Interaction des Clients:
+        Avant
+        Pendant 
+        Apres
+
+    - Statistiques par rapport au types d'action et de reaction:
+        izany hoe misafidy type anah action na reaction ,
+        de avieo misy ny Statistiques global hoe (dashboard) ohatrany hoe filtre zany.
+
+    -Capital de l'entreprise: (update isakin misy fiovana)
+        Avant
+        Pendant 
+        Apres
+
+    - nombre de action ou de reaction realisee
+    - activite de l'entreprise :
+        evaluation hoe ohatrany aona ny temps de reaction anle entreprise raha misy clients manao reaction
+
+    -  % anah efficacite anah reaction.
+
+    - affichage des clients les plus actif, (afaka asiana filtre par tranche d'age ohatra , na date )

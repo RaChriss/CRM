@@ -130,16 +130,21 @@ class ClientController
                 $types[$type] = ($types[$type] ?? 0) + 1;
             }
         }
-        Flight::render('template', [
-            'pageName' => 'client',
-            'pageTitle' => 'Gestion des Clients',
-            'clients' => $clients,
-            'ages' => $ages,
-            'types' => $types,
-            'taux_reservation_global' => $taux_reservation_global,
-            'taux_arrivee_global' => $taux_arrivee_global,
-            'taux_fidelite_global' => $taux_fidelite_global,
-            'message' => Flight::get('message') ?? null
+        // Flight::render('template', [
+        //     'pageName' => 'client',
+        //     'pageTitle' => 'Gestion des Clients',
+        //     'clients' => $clients,
+        //     'ages' => $ages,
+        //     'types' => $types,
+        //     'taux_reservation_global' => $taux_reservation_global,
+        //     'taux_arrivee_global' => $taux_arrivee_global,
+        //     'taux_fidelite_global' => $taux_fidelite_global,
+        //     'message' => Flight::get('message') ?? null
+        // ]);
+
+        Flight::render('template',[
+            'pageName' => 'home_crm',
+            'pageTitle' => 'Tableau de bord CRM'
         ]);
     }
 
