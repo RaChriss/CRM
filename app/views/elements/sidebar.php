@@ -92,6 +92,7 @@
           </a>
           <div class="collapse" id="crm">
             <ul class="nav nav-collapse">
+            <li><a href="<?= $base_url ?>/client"><span class="sub-item">DashBoard CRM</span></a></li>
               <li class="submenu">
                 <a data-bs-toggle="collapse" href="<?= $base_url ?>/#subnav1" class="collapsed" aria-expanded="false">
                   <span class="sub-item">Actions</span>

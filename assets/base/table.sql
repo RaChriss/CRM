@@ -1,7 +1,7 @@
 -- Active: 1746118334664@@127.0.0.1@3306@budget
 
 CREATE TABLE clients (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_client INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('éleveur', 'acheteur', 'partenaire') NOT NULL,
     nom VARCHAR(100) NOT NULL,
     adresse TEXT,
@@ -17,13 +17,13 @@ CREATE TABLE clients (
 );
 
 CREATE TABLE type_actions(
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_type_action INT AUTO_INCREMENT PRIMARY KEY,
     description VARCHAR(255) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE actions(
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_action INT AUTO_INCREMENT PRIMARY KEY,
     description VARCHAR(255) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     client_id INT NOT NULL,
@@ -33,14 +33,14 @@ CREATE TABLE actions(
 );
 
 CREATE TABLE type_reactions(
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_type_reaction INT AUTO_INCREMENT PRIMARY KEY,
     description VARCHAR(255) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     besoin_validation BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE reactions(
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_reaction INT AUTO_INCREMENT PRIMARY KEY,
     action_id INT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     montant DECIMAL(10,2),
@@ -60,7 +60,7 @@ CREATE TABLE reactions(
 
 
 CREATE TABLE animaux (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_animaux INT AUTO_INCREMENT PRIMARY KEY,
     espece ENUM('bovin', 'ovin', 'caprin', 'porcin', 'volaille', 'autre') NOT NULL,
     race VARCHAR(100),
     sexe ENUM('mâle', 'femelle', 'inconnu') NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE animaux (
 );
 
 CREATE TABLE transactions_animaux (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_trans_aniamux INT AUTO_INCREMENT PRIMARY KEY,
     animal_id INT NOT NULL,
     client_id INT NOT NULL, -- Client concerné par la transaction
     type_transaction ENUM('vente', 'achat', 'don', 'échange') NOT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE transactions_animaux (
 );
 
 CREATE TABLE feedbacks (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_feedback INT AUTO_INCREMENT PRIMARY KEY,
     client_id INT NOT NULL,
     reaction_id INT NOT NULL,
     note INT CHECK (note BETWEEN 1 AND 5),
@@ -110,7 +110,7 @@ CREATE TABLE feedbacks (
 
 
 CREATE TABLE stocks (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_stock INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('aliment', 'matériel', 'médicament', 'autre') NOT NULL,
     nom VARCHAR(100) NOT NULL,
     quantite DECIMAL(10,2) NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE stocks (
 );
 
 CREATE TABLE interventions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_intervention INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('sanitaire', 'technique', 'reproduction', 'autre') NOT NULL,
     animal_id INT,
     client_id INT, -- Pour les interventions concernant tout l'élevage
@@ -142,25 +142,9 @@ CREATE TABLE interventions (
     FOREIGN KEY (veterinaire_id) REFERENCES clients(id)
 );
 
-CREATE TABLE documents (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    type_document ENUM('contrat', 'certificat', 'facture', 'bon de livraison', 'autre') NOT NULL,
-    client_id INT,
-    animal_id INT,
-    transaction_id INT,
-    nom_fichier VARCHAR(255) NOT NULL,
-    chemin VARCHAR(255) NOT NULL,
-    date_emission DATE NOT NULL,
-    date_expiration DATE,
-    notes TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (client_id) REFERENCES clients(id),
-    FOREIGN KEY (animal_id) REFERENCES animaux(id),
-    FOREIGN KEY (transaction_id) REFERENCES transactions_animaux(id)
-);
 
 CREATE TABLE evenements_elevage (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_event_elevage INT AUTO_INCREMENT PRIMARY KEY,
     type ENUM('naissance', 'sevrage', 'mise bas', 'vaccination', 'pesée', 'exposition', 'autre') NOT NULL,
     animal_id INT,
     client_id INT, -- Pour les événements concernant tout l'élevage

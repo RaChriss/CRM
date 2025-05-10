@@ -245,3 +245,4 @@ SELECT
      AND YEAR(r.created_at) = YEAR(CURRENT_DATE())) AS actions_traitees
 FROM department d
 WHERE d.department_is_deleted = 0;
+
