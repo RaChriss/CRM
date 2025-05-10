@@ -28,7 +28,6 @@ class GeneraliserModel
         } catch (Exception $e) {
             return ["message" =>  "Erreur lors du calcul de la somme : " . $e->getMessage()];
         }
-
     }
 
     public function getAverageOfColumn($table, $column)
@@ -51,7 +50,7 @@ class GeneraliserModel
     {
         try {
             if (empty($table) || empty($column)) {
-               return ["message" => "Table et colonne obligatoires"]  ;
+                return ["message" => "Table et colonne obligatoires"];
             }
             $extremum = strtolower($extremum);
             if (!in_array($extremum, ['min', 'max'])) {
@@ -99,7 +98,7 @@ class GeneraliserModel
             $formData = $this->getFormData($table, $omitColumns, $method);
             foreach ($formData as $key => $value) {
                 if ($value === null) {
-                    $formDataStr = print_r($formData, true); 
+                    $formDataStr = print_r($formData, true);
                     return [
                         'success' => false,
                         'message' => "Le champ `$key` est obligatoire mais n'a pas été fourni. Contenu complet de \$formData : " . $formDataStr
@@ -136,7 +135,7 @@ class GeneraliserModel
         try {
             $formData = $this->getFormData($table, $omitColumns, $method);
             $requiredColumns = array_diff(array_keys($formData), $omitColumns);
-            
+
             foreach ($requiredColumns as $column) {
                 if (!isset($formData[$column]) || $formData[$column] === null) {
                     return [
@@ -213,7 +212,8 @@ class GeneraliserModel
         }
     }
 
-    public function insererDonnees($tableName, $data) {
+    public function insererDonnees($tableName, $data)
+    {
         try {
             $columns = array_keys($data[0]);
             $columnList = implode(", ", $columns);
@@ -239,16 +239,17 @@ class GeneraliserModel
         }
     }
 
-    function getTableData($tableName, $conditions = [], $omitColumns = [], $join = null) {
+    function getTableData($tableName, $conditions = [], $omitColumns = [], $join = null)
+    {
         if (empty($tableName)) {
-            return ["message" => 'Le nom de la table ne peut pas être vide.'] ;
+            return ["message" => 'Le nom de la table ne peut pas être vide.'];
         }
         $sql = "SELECT * FROM $tableName";
         if ($join !== null && is_array($join)) {
             foreach ($join as $joinInfo) {
                 if (isset($joinInfo[0], $joinInfo[1]) && is_array($joinInfo[1])) {
-                    $table2 = $joinInfo[0];       
-                    $joinColumns = $joinInfo[1];  
+                    $table2 = $joinInfo[0];
+                    $joinColumns = $joinInfo[1];
                     $onClauses = [];
                     foreach ($joinColumns as $columnPair) {
                         if (count($columnPair) === 2) {
@@ -285,9 +286,10 @@ class GeneraliserModel
         }
         return $data;
     }
-    
 
-    function isIdUsedInTable($cell, $tableName) {
+
+    function isIdUsedInTable($cell, $tableName)
+    {
         if (empty($tableName) || empty($cell)) {
             return ["message" => 'Le nom de la table et la cellule ne peuvent pas être vides.'];
         }
@@ -309,7 +311,7 @@ class GeneraliserModel
             return ["message" => "Erreur de base de données : " . $e->getMessage()];
         }
     }
-    
+
     public function getLastInsertedId($table, $idColumn)
     {
         try {
@@ -420,7 +422,8 @@ class GeneraliserModel
         return ["data" => $data, "status" => "success"];
     }
 
-    function updateTableData($tableName, $data, $conditions = []) {
+    function updateTableData($tableName, $data, $conditions = [])
+    {
         if (empty($tableName)) {
             return 'Le nom de la table ne peut pas être vide.';
         }
@@ -444,7 +447,7 @@ class GeneraliserModel
             }
         }
         $result = Flight::bdd()->exec($sql);
-        return ['status'=>'success'];
+        return ['status' => 'success'];
     }
 
     public function deleteData($table, $conditions = [])
@@ -483,6 +486,4 @@ class GeneraliserModel
             ];
         }
     }
-
-
 }

@@ -1,15 +1,97 @@
 <?php
+
 namespace app\controllers;
+
 use Flight;
 
-class ReactionClientController {
-    public function showReactionStats() {
+class ReactionClientController
+{
+    public function refuseReaction()
+    {
+        $generaliserModel = Flight::generaliserModel();
+        try {
+            $reactionId = (int)$_POST['reaction_effectue_id'];
+            if (empty($reactionId)) {
+                throw new \Exception('ID de la réaction effectuée manquant.');
+            }
+            $generaliserModel->updateTableData('reactions', ['statut' => 'rejete'], ['id_reaction' => $reactionId]);
+        } catch (\Exception $e) {
+            Flight::set('message', 'Erreur : ' . $e->getMessage());
+            return;
+        } finally {
+            Flight::redirect('/crm/reaction/validation');
+        }
+    }
+
+    public function listeToValidate()
+    {
+        $generaliserModel = Flight::generaliserModel();
+
+        $conditions = ['statut' => 'en attente'];
+        $join = [
+            ['type_reactions', [['reactions.type_reaction_id', 'type_reactions.id_type_reaction']]],
+        ];
+        $reactions = $generaliserModel->getTableData('reactions', $conditions, [], $join);
+
+        Flight::render('template', [
+            'pageName' => 'liste_reaction_pending',
+            'pageTitle' => 'Liste des Réactions à Valider',
+            'reactions' => $reactions
+        ]);
+    }
+
+    public function saveReaction()
+    {
+        $generaliserModel = Flight::generaliserModel();
+        try {
+            $createdAt = isset($_POST['created_at']) ? date('Y-m-d H:i:s', strtotime($_POST['created_at'])) : null;
+            $actionId = isset($_POST['action_id']) ? (int)$_POST['action_id'] : null;
+            $data = [
+                'action_id' => $actionId,
+                'created_at' => $createdAt,
+                'montant' => isset($_POST['montant']) ? number_format((float)$_POST['montant'], 2, '.', '') : null,
+                'type_reaction_id' => isset($_POST['type_reaction_id']) ? (int)$_POST['type_reaction_id'] : null,
+                'commentaire' => $_POST['commentaire'] ?? '',
+                'valide_par' => isset($_POST['created_by']) ? (int)$_POST['created_by'] : null,
+            ];
+            $reactionModel = Flight::reactionModel();
+            $reactionModel->checkDateReaction($actionId, $createdAt);
+            $result = $generaliserModel->insererDonnee('reactions', $data);
+            if ($result['status'] === 'success') {
+                Flight::set('message', 'Réaction insérée avec succès.');
+            } else {
+                Flight::set('message', 'Erreur lors de l\'insertion de la réaction : ' . $result['message']);
+            }
+        } catch (\Exception $e) {
+            Flight::set('message', 'Erreur : ' . $e->getMessage());
+            return;
+        } finally {
+            Flight::redirect('/crm/reaction/insert');
+        }
+    }
+
+    public function insertPage()
+    {
+        $modelGeneraliser = Flight::generaliserModel();
+        $actions = $modelGeneraliser->getTableData('actions', []);
+        $types = $modelGeneraliser->getTableData('type_reactions', []);
+        Flight::render('template', [
+            'pageName' => 'form_reaction',
+            'pageTitle' => 'Ajouter une Reaction',
+            'actions' => $actions,
+            'types' => $types,
+            'message' => Flight::get('message') ?? null,
+        ]);
+    }
+
+    public function showReactionStats()
+    {
         $phase = (isset($_GET['phase']) && $_GET['phase'] !== '') ? (int)$_GET['phase'] : null;
         $reactionModel = Flight::reactionModel();
         $frequencies = $reactionModel->getReactionFrequencies($phase);
         $byAgeRange = $reactionModel->getReactionFrequenciesByAgeRange($phase);
 
-        
+
         Flight::render('template', [
             'pageName' => 'reaction_client',
             'pageTitle' => 'Statistiques Réactions Clients',
@@ -22,20 +104,20 @@ class ReactionClientController {
     public function showEffectuerReactionForm()
     {
         $generaliserModel = Flight::generaliserModel();
-    
+
         // Récupérer les actions effectuées avec un JOIN pour inclure les informations des actions et des utilisateurs
         $join = [
             ['action', [['action_effectue.action_id', 'action.id']]],
             ['client', [['action_effectue.user_id', 'client.id']]]
         ];
         $actions = $generaliserModel->getTableData('action_effectue', [], [], $join);
-    
+
         // Récupérer les réactions
         $reactions = $generaliserModel->getTableData('reaction', []);
-    
+
         // Rendre la vue avec les données
         Flight::render('template', [
-            'pageName' => 'effectuer_reaction', 
+            'pageName' => 'effectuer_reaction',
             'pageTitle' => 'Effectuer Réaction',
             'actions' => $actions,
             'reactions' => $reactions
@@ -59,7 +141,7 @@ class ReactionClientController {
                         'action_effectue_id' => $row['action_effectue_id'] ?? null,
                         'date_reaction' => $row['date_reaction'] ?? null
                     ];
-                    $reactionModel->reactionEffectueAvecBudget($reactionEffectue["reaction_id"], $reactionEffectue["action_effectue_id"],$reactionEffectue["date_reaction"]);
+                    $reactionModel->reactionEffectueAvecBudget($reactionEffectue["reaction_id"], $reactionEffectue["action_effectue_id"], $reactionEffectue["date_reaction"]);
                 }
                 Flight::set('message', 'Import CSV terminé.');
             } else {
@@ -115,7 +197,7 @@ class ReactionClientController {
             $fileTmpPath = $_FILES['csv_file']['tmp_name'];
             $generaliserModel = Flight::generaliserModel();
             $result = $generaliserModel->importCsv($fileTmpPath, ',');
-    
+
             if ($result['status'] === 'success') {
                 $data = $result['data'];
                 foreach ($data as $row) {
@@ -125,10 +207,9 @@ class ReactionClientController {
                         'phase' => isset($row['phase']) ? (int)$row['phase'] : null,
                         'cout' => isset($row['cout']) ? (int)$row['cout'] : null
                     ];
-    
+
                     // Insérer la réaction
                     $generaliserModel->insererDonnee('reaction', $reaction);
-    
                 }
                 Flight::set('message', 'Import CSV réaction terminé.');
             } else {
@@ -170,14 +251,14 @@ class ReactionClientController {
             $reactionId = (int)$_POST['reaction'];
             $reactionDate = $_POST['reaction_date'];
             $actionId = (int)$_POST['action_id'];
-    
+
             // Utiliser ReactionModel pour obtenir id_exercice et num_periode
             $reactionModel = Flight::reactionModel();
-    
+
             try {
                 // Appeler la fonction pour gérer la réaction et le budget
                 $reactionModel->reactionEffectueAvecBudget($reactionId, $actionId, $reactionDate);
-    
+
                 if (Flight::request()->ajax) {
                     Flight::json(['status' => 'success', 'message' => 'Réaction effectuée avec succès et transaction enregistrée.']);
                 } else {
@@ -202,125 +283,78 @@ class ReactionClientController {
         }
     }
 
-
-    function afficherListeReactionPending()
+    public function validateReaction()
     {
-        $generaliserModel = Flight::generaliserModel();
-        $join = [
-            ['reaction_effectue_validation', [['reaction_effectue.id', 'reaction_effectue_validation.reaction_effectue_id']]],
-            ['reaction', [['reaction_effectue.reaction_id', 'reaction.id']]],
-            ['action_effectue', [['reaction_effectue.action_effectue_id', 'action_effectue.id']]],
-            ['client', [['action_effectue.user_id', 'client.id']]]
-        ];
-    
-        // Ajouter la condition pour que reaction_effectue_validation.status = 0
-        $conditions = ['reaction_effectue_validation.status' => 0];
-    
-        // Récupérer les données avec les conditions et les jointures
-        $reactions = $generaliserModel->getTableData('reaction_effectue', $conditions, [], $join);
-    
-        // Rendre la vue avec les données
-        Flight::render('template', [
-            'pageName' => 'liste_reaction_pending',
-            'pageTitle' => 'Liste des Réactions en Attente',
-            'reactions' => $reactions
-        ]);
-    }
-
-
-    public function validerReaction()
-    {
-        $reactionEffectueId = (int)$_POST['reaction_effectue_id'];
-        if (empty($reactionEffectueId)) {
-            Flight::set('message', 'Erreur : ID de la réaction effectuée manquant.');
-            Flight::redirect('/reaction-client/liste-reaction-pending');
-            return;
-        }
         $generaliserModel = Flight::generaliserModel();
         $reactionModel = Flight::reactionModel();
-    
-        // Récupérer les informations de la réaction effectuée
-        $join = [
-            ['reaction', [['reaction_effectue.reaction_id', 'reaction.id']]],
-        ];
-        $reactionEffectue = $generaliserModel->getTableData('reaction_effectue', ['reaction_effectue.id' => $reactionEffectueId], [], $join);
-    
-        if (empty($reactionEffectue)) {
-            Flight::set('message', 'Erreur : Réaction effectuée introuvable.');
-            Flight::redirect('/reaction-client/liste-reaction-pending');
-            return;
-        }
-    
-        $reactionEffectue = $reactionEffectue[0]; // Récupérer la première ligne
-        $dateReaction = $reactionEffectue['date_reaction'];
-        $coutReaction = $reactionEffectue['cout'];
-    
-        // Obtenir l'exercice et le numéro de période correspondant à la date de la réaction
-        $exerciseId = $reactionModel->getExerciseIdByDate($dateReaction);
-        $periodNum = $reactionModel->getPeriodNumberByDate($dateReaction);
-    
-        if ($exerciseId === null || $periodNum === null) {
-            Flight::set('message', 'Erreur : Impossible de déterminer l\'exercice ou la période pour la date donnée.');
-            Flight::redirect('/reaction-client/liste-reaction-pending');
-            return;
-        }
-    
-        // Récupérer l'ID du budget_element pour le département CRM (department_id = 4)
-        $budgetElement = $generaliserModel->getTableData('budget_element', ['department_id' => 4]);
-    
-        if (empty($budgetElement)) {
-            Flight::set('message', 'Erreur : Budget élément pour le département CRM introuvable.');
-            Flight::redirect('/reaction-client/liste-reaction-pending');
-            return;
-        }
-    
-        $budgetElementId = $budgetElement[0]['budget_element_id'];
-    
-        // Vérifier si une transaction existe déjà pour cet exercice, période et budget_element
-        $transaction = $generaliserModel->getTableData('transaction', [
-            'exercise_id' => $exerciseId,
-            'period_num' => $periodNum,
-            'budget_element_id' => $budgetElementId,
-            'nature' => 2 // Réalisation
-        ]);
-    
-        if (!empty($transaction)) {
-            // Mettre à jour le montant de la transaction existante
-            $transactionId = $transaction[0]['transaction_id'];
-            $newAmount = $transaction[0]['amount'] + $coutReaction;
-    
-            $generaliserModel->updateTableData('transaction', ['amount' => $newAmount], ['transaction_id' => $transactionId]);
-        } else {
-            // Insérer une nouvelle transaction
-            $generaliserModel->insererDonnee('transaction', [
-                'nature' => 2,
-                'exercise_id' => $exerciseId,
-                'budget_element_id' => $budgetElementId,
-                'period_num' => $periodNum,
-                'amount' => $coutReaction,
-                'status' => 1,
-                'priority_id' => 2
-            ]);
-        }
-    
-        // Mettre à jour le statut de la réaction effectuée à validée
-        $generaliserModel->updateTableData('reaction_effectue_validation', ['status' => 1], ['reaction_effectue_id' => $reactionEffectueId]);
-    
-        Flight::set('message', 'Réaction validée avec succès.');
-        Flight::redirect('/reaction-client/liste-reaction-pending');
-    }
 
-    public function refuserReaction()
-{
-    if (isset($_POST['reaction_effectue_id'])) {
-        $reactionEffectueId = (int)$_POST['reaction_effectue_id'];
-        $generaliserModel = Flight::generaliserModel();
-        $generaliserModel->updateDonnee('reaction_effectue_validation', ['status' => -1], ['reaction_effectue_id' => $reactionEffectueId]);
-        Flight::set('message', 'Réaction refusée avec succès.');
-        Flight::redirect('/reaction-client/liste-reaction-pending');
-    } else {
-        Flight::set('message', 'Erreur : ID de la réaction manquant.');
-        Flight::redirect('/reaction-client/liste-reaction-pending');
+        try {
+            $reactionEffectueId = (int)$_POST['reaction_effectue_id'];
+            if (empty($reactionEffectueId)) {
+                throw new \Exception('Erreur : ID de la réaction effectuée manquant.');
+            }
+
+            // Récupérer les informations de la réaction effectuée
+            $reactionEffectue = $generaliserModel->getTableData('reactions', ['id_reaction' => $reactionEffectueId]);
+            if (empty($reactionEffectue)) {
+                throw new \Exception('Erreur : Réaction effectuée introuvable.');
+            }
+
+            $reactionEffectue = $reactionEffectue[0]; // Récupérer la première ligne
+            $dateReaction = date('Y-m-d');
+            $coutReaction = $reactionEffectue['montant'];
+
+            // Obtenir l'exercice et le numéro de période correspondant à la date de la réaction
+            $exerciseId = $reactionModel->getExerciseIdByDate($dateReaction);
+            $periodNum = $reactionModel->getPeriodNumberByDate($dateReaction);
+
+            if ($exerciseId === null || $periodNum === null) {
+                throw new \Exception('Erreur : Impossible de déterminer l\'exercice ou la période pour la date donnée.');
+            }
+
+            // Récupérer l'ID du budget_element pour le département CRM (department_id = 4)
+            $budgetElement = $generaliserModel->getTableData('budget_element', ['department_id' => 4]);
+            if (empty($budgetElement)) {
+                throw new \Exception('Erreur : Budget élément pour le département CRM introuvable.');
+            }
+
+            $budgetElementId = $budgetElement[0]['budget_element_id'];
+
+            // Vérifier si une transaction existe déjà pour cet exercice, période et budget_element
+            $transaction = $generaliserModel->getTableData('transaction', [
+                'exercise_id' => $exerciseId,
+                'period_num' => $periodNum,
+                'budget_element_id' => $budgetElementId,
+                'nature' => 2 // Réalisation
+            ]);
+
+            if (!empty($transaction)) {
+                // Mettre à jour le montant de la transaction existante
+                $transactionId = $transaction[0]['transaction_id'];
+                $newAmount = $transaction[0]['amount'] + $coutReaction;
+
+                $generaliserModel->updateTableData('transaction', ['amount' => $newAmount], ['transaction_id' => $transactionId]);
+            } else {
+                // Insérer une nouvelle transaction
+                $generaliserModel->insererDonnee('transaction', [
+                    'nature' => 2,
+                    'exercise_id' => $exerciseId,
+                    'budget_element_id' => $budgetElementId,
+                    'period_num' => $periodNum,
+                    'amount' => $coutReaction,
+                    'status' => 1,
+                    'priority_id' => 2
+                ]);
+            }
+
+            // Mettre à jour le statut de la réaction effectuée à validée
+            $generaliserModel->updateTableData('reactions', ['statut' => 'valide'], ['id_reaction' => $reactionEffectueId]);
+
+            Flight::set('message', 'Réaction validée avec succès.');
+        } catch (\Exception $e) {
+            Flight::set('message', $e->getMessage());
+        } finally {
+            Flight::redirect('/crm/reaction/validation');
+        }
     }
-}
 }

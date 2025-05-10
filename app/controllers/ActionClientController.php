@@ -1,9 +1,46 @@
 <?php
+
 namespace app\controllers;
+
 use Flight;
 
-class ActionClientController {
-    public function showActionStats() {
+class ActionClientController
+{
+
+    public function saveAction()
+    {
+        $generaliserModel = Flight::generaliserModel();
+        $data = [
+            'description' => $_POST['description'] ?? '',
+            'created_at' => isset($_POST['created_at']) ? date('Y-m-d H:i:s', strtotime($_POST['created_at'])) : null,
+            'client_id' => $_POST['client_id'] ?? null,
+            'type_action_id' => $_POST['type_action_id'] ?? null
+        ];
+        $result = $generaliserModel->insererDonnee('actions', $data);
+        if ($result['status'] === 'success') {
+            Flight::set('message', 'Action insérée avec succès.');
+        } else {
+            Flight::set('message', 'Erreur lors de l\'insertion de l\'action : ' . $result['message']);
+        }
+        Flight::redirect('/crm/action/insert');
+    }
+
+    public function insertPage()
+    {
+        $modelGeneraliser = Flight::generaliserModel();
+        $clients = $modelGeneraliser->getTableData('clients', []);
+        $types = $modelGeneraliser->getTableData('type_actions', []);
+        Flight::render('template', [
+            'pageName' => 'form_action_client',
+            'pageTitle' => 'Ajouter une action client',
+            'clients' => $clients,
+            'types' => $types,
+            'message' => Flight::get('message') ?? null,
+        ]);
+    }
+
+    public function showActionStats()
+    {
         $phase = (isset($_GET['phase']) && $_GET['phase'] !== '') ? (int)$_GET['phase'] : null;
         $actionModel = Flight::actionModel();
         $frequencies = $actionModel->getActionFrequencies($phase);

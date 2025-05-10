@@ -8,6 +8,7 @@ class ActionModel {
         $this->db = $db;
     }
 
+
     // Fréquence de chaque action et nombre de clients distincts, filtré par phase
     public function getActionFrequencies($phase = null) {
         $sql = "SELECT a.id, a.description, a.cout, a.phase, COUNT(ae.id) AS frequence, COUNT(DISTINCT ae.user_id) AS nb_clients
